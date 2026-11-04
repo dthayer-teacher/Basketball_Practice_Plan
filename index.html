@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Brentwood Practice Planner</title>
+<style>
+:root{--navy:#17334b;--blue:#285b7a;--bg:#f1f4f6;--line:#dce3e8;--muted:#607181;--gold:#e9b954}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--navy);font:15px/1.5 system-ui,-apple-system,Arial,sans-serif}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer;border:1px solid var(--line);border-radius:9px;padding:10px 14px;background:white;color:var(--navy);min-height:44px;font-weight:600}
+button:hover{background:#edf3f7}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #e9b954;outline-offset:2px}
+.primary{background:var(--navy);color:white;border-color:var(--navy)}
+.primary:hover{background:var(--blue)}
+header{background:var(--navy);color:white;padding:25px max(20px,calc((100vw - 1120px)/2))}
+.eyebrow{font-size:11px;font-weight:750;letter-spacing:2px;color:#d9b86d}
+h1{font-size:28px;letter-spacing:-.7px;margin:4px 0}
+header p{margin:0;color:#c3d3df;font-size:14px}
+main{max-width:1160px;margin:auto;padding:22px 20px 50px}
+.toolbar,.actions,.stats,.rowtop,.rowbuttons{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.toolbar{justify-content:space-between;margin-bottom:16px}
+.toolbar select{max-width:240px}
+.panel{background:white;border:1px solid var(--line);border-radius:14px;padding:22px;margin-bottom:18px}
+h2{font-size:18px;margin:0 0 15px}
+.grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:14px}
+label{display:block;font-size:12px;font-weight:650;color:var(--muted)}
+input,select,textarea{display:block;width:100%;border:1px solid #cbd5dd;border-radius:7px;padding:10px;background:white;color:#19374f;margin-top:5px;min-height:44px}
+textarea{resize:vertical;min-height:70px}
+.wide{grid-column:1/-1}
+.stats{padding:14px 18px;background:#e7eef3;border-radius:10px;margin:16px 0 5px;gap:25px}
+.stat strong{display:block;font-size:22px;line-height:1.2}
+.stat span{font-size:12px;color:var(--muted)}
+.notice{font-size:13px;color:var(--muted);margin:12px 0 0}
+.warning{color:#a34222}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:18px;align-items:start}
+.library{position:sticky;top:15px}
+.library h2{margin-bottom:5px}
+.library p{font-size:13px;color:var(--muted)}
+.library button{width:100%;text-align:left;margin:4px 0;font-size:13px}
+.library button small{display:block;color:var(--muted);font-weight:400}
+.drill{border:1px solid var(--line);border-left:4px solid #7997ad;border-radius:10px;padding:14px;margin-bottom:12px;background:#fff}
+.rowtop{justify-content:space-between;margin-bottom:10px}
+.number{font-size:12px;font-weight:750;color:var(--muted)}
+.clock{font-size:12px;background:#eaf0f4;border-radius:5px;padding:3px 8px;margin-left:8px}
+.rowbuttons button{padding:5px 11px;min-height:36px}
+.rowbuttons button:disabled{opacity:.3;cursor:default}
+.drillgrid{display:grid;grid-template-columns:minmax(0,1fr) 85px;gap:10px}
+.drillgrid .detail{grid-column:1/-1}
+.assignments{display:grid;grid-template-columns:1fr 1fr;gap:10px;grid-column:1/-1}
+.drill input,.drill textarea{margin-top:3px}
+.drill textarea{min-height:62px}
+.empty{text-align:center;padding:35px 15px;border:2px dashed var(--line);border-radius:10px;color:var(--muted)}
+.empty strong{display:block;font-size:18px;color:var(--navy);margin-bottom:7px}
+#status{font-size:13px;color:var(--muted);min-height:22px;margin:10px 0}
+.transfer{background:#fff9ea;border-color:#ead7a8}
+.transfer p{font-size:13px;margin:0 0 14px}
+.hidden{display:none!important}
+#report{background:white;padding:32px;border:1px solid var(--line);border-radius:12px;color:#172e42}
+#report h1{font-size:23px;margin:0}
+#report h2{font-size:14px;font-weight:500;margin:3px 0 18px;color:#586a79}
+.reportMeta{display:flex;gap:24px;flex-wrap:wrap;margin-bottom:12px;font-size:13px}
+.reportNote{white-space:pre-wrap;font-size:13px;margin:9px 0}
+table{width:100%;border-collapse:collapse;font-size:12px;margin-top:18px;table-layout:fixed}
+th{text-align:left;background:#17334b;color:white;padding:9px 6px}
+td{padding:9px 6px;border-bottom:1px solid #dce3e8;vertical-align:top;overflow-wrap:anywhere;white-space:pre-wrap}
+tbody tr:nth-child(even){background:#f3f6f8}
+.reportFoot{margin-top:20px;border-top:2px solid #17334b;padding-top:10px;font-size:12px;font-weight:650}
+.reportSection{margin-top:18px;break-inside:avoid}
+.reportSection b{font-size:12px}
+.printhelp{font-size:13px;color:var(--muted);margin:0 0 14px}
+dialog{width:min(600px,94vw);border:1px solid var(--line);border-radius:16px;padding:24px;color:var(--navy)}
+dialog::backdrop{background:#17334b77}
+dialog textarea{min-height:150px;font:12px monospace}
+dialog h2{margin-bottom:8px}
+dialog p{font-size:13px}
+@media(max-width:760px){
+header{padding:20px}h1{font-size:25px}
+main{padding:15px 12px 30px}
+.grid{grid-template-columns:1fr 1fr}
+.grid .titlefield{grid-column:1/-1}
+.layout{grid-template-columns:1fr}
+.library{position:static;order:-1;padding:16px}
+.libraryButtons{display:flex;gap:7px;overflow:auto}
+.library button{flex:0 0 155px;margin:2px 0}
+.panel{padding:16px}
+.toolbar{align-items:stretch}
+.toolbar>.actions{width:100%}
+.stats{gap:18px}
+#report{padding:15px;overflow:auto}
+table{min-width:650px}
+}
+@media print{
+@page{size:letter portrait;margin:.4in}
+body{background:white;font:10pt Arial,sans-serif}
+header,.toolbar,#editor,.transfer,#status,.printhelp,#previewActions,dialog{display:none!important}
+main{padding:0;max-width:none}
+#preview,#report{display:block!important}
+#report{padding:0;border:0;border-radius:0}
+#report h1{font-size:19pt}
+#report h2{font-size:10pt;margin-bottom:12px}
+table{min-width:0!important;font-size:9pt}
+thead{display:table-header-group}
+tr{break-inside:avoid}
+th{background:white;color:#17334b;border-top:2px solid #17334b;border-bottom:2px solid #17334b}
+td{padding:6px 4px}
+.reportMeta,.reportNote{font-size:9pt}
+.reportFoot{font-size:9pt}
+}
+</style>
+</head>
+<body>
+<header>
+<div class="eyebrow">BRENTWOOD BASKETBALL</div>
+<h1>Practice Planner</h1>
+<p>Build on your phone. Open on a computer. Print for the court.</p>
+</header>
+<main>
+<div class="toolbar">
+<div class="actions">
+<button class="primary" id="editBtn">Build practice</button>
+<button id="previewBtn">Print preview</button>
+</div>
+<div class="actions">
+<select id="savedList" aria-label="Saved practices"><option value="">Saved on this device</option></select>
+<button id="newBtn">New practice</button>
+<button id="saveBtn">Save</button>
+</div>
+</div>
+
+<div class="panel transfer">
+<p><strong>Phone → computer:</strong> Choose <b>Export plan</b> on your phone, send the file to yourself or save it in Google Drive, then choose <b>Open plan</b> here on your computer. Select <b>Print preview</b>, then <b>Print / PDF</b>.</p>
+<div class="actions">
+<button id="exportBtn">Export plan</button>
+<button id="importBtn">Open plan</button>
+<button id="transferBtn">Copy / paste transfer</button>
+</div>
+<p class="notice" style="margin:10px 0 0">This first version saves in this browser. Plans do not automatically sync between devices.</p>
+<input id="fileInput" type="file" accept=".json,application/json" hidden style="display:none">
+</div>
+<div id="status" role="status" aria-live="polite"></div>
+
+<section id="editor">
+<div class="panel">
+<h2>Practice details</h2>
+<div class="grid">
+<label class="titlefield">Practice name<input id="title" data-meta="title" maxlength="120"></label>
+<label>Date<input id="date" data-meta="date" type="date"></label>
+<label>Start time<input id="start" data-meta="start" type="time"></label>
+<label>Target minutes<input id="target" data-meta="target" type="number" min="1" max="480"></label>
+<label class="wide">Practice focus<input id="focus" data-meta="focus" placeholder="What do we need to improve today?" maxlength="500"></label>
+<label class="wide">Personnel / availability<input id="personnel" data-meta="personnel" placeholder="Player restrictions, groups, staff reminders…" maxlength="500"></label>
+</div>
+<div class="stats">
+<div class="stat"><strong id="minutes">0</strong><span>assigned minutes</span></div>
+<div class="stat"><strong id="end">—</strong><span>practice ends</span></div>
+<div class="stat"><strong id="remaining">—</strong><span id="remainingLabel">minutes remaining</span></div>
+</div>
+<p id="timingNote" class="notice"></p>
+</div>
+
+<div class="layout">
+<div>
+<div class="panel">
+<div class="rowtop"><h2 style="margin:0">Practice timeline</h2><button id="addBtn">+ Custom activity</button></div>
+<div id="drills"></div>
+</div>
+<div class="panel">
+<h2>Finish the plan</h2>
+<label>Set plays to review<textarea id="plays" data-meta="plays" placeholder="Ice, Rip, Wheel…" maxlength="3000"></textarea></label>
+<label style="margin-top:12px">Coach notes / post-practice review<textarea id="review" data-meta="review" placeholder="What worked? What needs attention next practice?" maxlength="3000"></textarea></label>
+</div>
+</div>
+<aside class="panel library">
+<h2>Drill library</h2>
+<p>Tap to add. Edit the minutes and details in your timeline.</p>
+<div class="libraryButtons" id="library"></div>
+<button id="sampleBtn" style="margin-top:16px;background:#eef3f7">Load last year's example</button>
+<p>Uses the drills and order from your November 21, 2025 plan. Missing minutes stay blank.</p>
+</aside>
+</div>
+</section>
+
+<section id="preview" class="hidden">
+<div id="previewActions" class="actions" style="margin-bottom:12px">
+<button class="primary" id="printBtn">Print / PDF</button>
+<button id="backBtn">Back to editing</button>
+</div>
+<p class="printhelp">On a computer, select a printer or “Save as PDF” in the print dialog. If the preview blocks printing, use your browser’s Print command while this view is open.</p>
+<div id="report"></div>
+</section>
+</main>
+
+<dialog id="transferDialog">
+<h2>Transfer a practice</h2>
+<p>Copy this plan text on your phone. On the computer, open this planner, paste the text here, and select <b>Open pasted plan</b>.</p>
+<textarea id="transferText" aria-label="Practice transfer text" spellcheck="false"></textarea>
+<div class="actions" style="margin-top:14px">
+<button id="copyBtn" class="primary">Copy text</button>
+<button id="pasteBtn">Open pasted plan</button>
+<button id="closeDialog">Close</button>
+</div>
+<p id="transferStatus" role="status"></p>
+</dialog>
+
+<script>
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id);
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const key='brentwood-practice-planner-v1';
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const dateToday=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
+const library=[
+['Warmup',null,'Shooting - Hand off'],
+['Passing',null,''],
+['Weave',4,''],
+['Weave - with shooting',6,''],
+['Stretching',8,'','Fochtman'],
+['2 ball work',4,''],
+['G/F split',8,'G: Corner shoot - wing villanova\nF: Post Moves'],
+['Post Feeds',5,''],
+['Set plays',10,''],
+['3 Across',6,'2 guards - skip pass'],
+['M2M 1/2 court',10,'Memphis, Memphis2 - Set plays'],
+['Across/FT',6,''],
+['Zone - 1/2 court',12,''],
+['Press Break',6,''],
+['2-2-1 Press',8,'Back to amoeba'],
+['BLOB',8,''],
+['Full Court',15,'Man Pressure - push ball'],
+['Water break',null,'']
+];
+function activity(a){return {id:uid(),name:a[0],min:a[1]??'',detail:a[2]||'',coach:a[3]||'',court:''}}
+function fresh(){return {id:uid(),title:'Varsity practice',date:dateToday(),start:'15:00',target:120,focus:'',personnel:'',plays:'',review:'',drills:[]}}
+let saved=[],plan=fresh(),storageOK=true,timer;
+try{
+const data=JSON.parse(localStorage.getItem(key)||'null');
+if(data&&Array.isArray(data.saved))saved=data.saved;
+if(data&&data.draft)plan=validate(data.draft);
+}catch(e){storageOK=false;}
+function notify(s){$('status').textContent=s}
+function persist(){
+try{localStorage.setItem(key,JSON.stringify({saved,draft:plan}));storageOK=true;return true}
+catch(e){storageOK=false;notify('Browser storage is unavailable or full. Export this plan to keep a copy.');return false}
+}
+function changed(){clearTimeout(timer);timer=setTimeout(()=>{if(persist())notify('Draft saved in this browser. Export to transfer it to another device.')},400)}
+function clock(n){n=((Math.round(n)%1440)+1440)%1440;return `${n%720<60?12:Math.floor((n%720)/60)}:${String(n%60).padStart(2,'0')} ${n<720?'AM':'PM'}`}
+function info(){
+const total=plan.drills.reduce((n,d)=>n+(d.min===''?0:Number(d.min)),0);
+const missing=plan.drills.filter(d=>d.min==='').length;
+let t=plan.start?Number(plan.start.slice(0,2))*60+Number(plan.start.slice(3)):null;
+const times=plan.drills.map(d=>{
+if(t===null||d.min===''){t=null;return 'Untimed'}
+const a=t;t+=Number(d.min);return `${clock(a)} – ${clock(t)}`});
+return {total,missing,times,end:plan.drills.length&&t!==null?clock(t):'—'};
+}
+function summary(){
+const i=info();
+$('minutes').textContent=i.total;
+$('end').textContent=i.end;
+$('remaining').textContent=plan.target===''?'—':Math.abs(Number(plan.target)-i.total);
+$('remainingLabel').textContent=Number(plan.target)<i.total?'minutes over target':'minutes remaining';
+$('remaining').classList.toggle('warning',plan.target!==''&&i.total>Number(plan.target));
+const note=i.missing?`${i.missing} ${i.missing===1?'activity needs':'activities need'} minutes. End time is incomplete.`:!plan.start?'Enter a start time to calculate clock times.':!plan.drills.length?'Choose a drill or add a custom activity to get started.':'Times update as you change or reorder activities.';
+$('timingNote').textContent=note;
+$('timingNote').classList.toggle('warning',i.missing>0);
+document.querySelectorAll('[data-clock]').forEach((el,j)=>el.textContent=i.times[j]);
+renderReport();
+}
+function renderDrills(){
+$('drills').innerHTML=plan.drills.length?plan.drills.map((d,j)=>`
+<div class="drill" data-id="${esc(d.id)}">
+<div class="rowtop"><div><span class="number">${String(j+1).padStart(2,'0')}</span><span class="clock" data-clock></span></div>
+<div class="rowbuttons">
+<button data-action="up" aria-label="Move activity ${j+1} up" ${j===0?'disabled':''}>↑</button>
+<button data-action="down" aria-label="Move activity ${j+1} down" ${j===plan.drills.length-1?'disabled':''}>↓</button>
+<button data-action="remove" aria-label="Remove activity ${j+1}">Remove</button></div></div>
+<div class="drillgrid">
+<label>Activity<input data-field="name" value="${esc(d.name)}" maxlength="200" placeholder="Activity name"></label>
+<label>Minutes<input data-field="min" type="number" min="0" max="180" step="1" value="${esc(d.min)}" placeholder="—"></label>
+<label class="detail">Details / coaching points<textarea data-field="detail" maxlength="3000" placeholder="Teaching points, rules, scoring…">${esc(d.detail)}</textarea></label>
+<div class="assignments"><label>Coach<input data-field="coach" maxlength="200" value="${esc(d.coach)}"></label>
+<label>Court / group<input data-field="court" maxlength="200" value="${esc(d.court)}"></label></div>
+</div></div>`).join(''):'<div class="empty"><strong>Your practice starts here</strong>Add drills from the library, create a custom activity, or load last year’s example.</div>';
+summary();
+}
+function renderSaved(){
+$('savedList').innerHTML='<option value="">Saved on this device</option>'+saved.map(p=>`<option value="${esc(p.id)}">${esc(p.date)} · ${esc(p.title)}</option>`).join('');
+}
+function render(){
+for(const el of document.querySelectorAll('[data-meta]'))el.value=plan[el.dataset.meta]??'';
+renderSaved();renderDrills();
+}
+function renderReport(){
+const i=info();
+let formatted=plan.date;
+if(plan.date){const d=new Date(plan.date+'T12:00:00');if(!isNaN(d))formatted=d.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'})}
+$('report').innerHTML=`
+<h1>BRENTWOOD BASKETBALL</h1><h2>${esc(plan.title)}${formatted?' · '+esc(formatted):''}</h2>
+<div class="reportMeta"><span><b>Start:</b> ${plan.start?esc(clock(Number(plan.start.slice(0,2))*60+Number(plan.start.slice(3)))):'Not entered'}</span><span><b>Assigned:</b> ${i.total} min${i.missing?' + '+i.missing+' untimed':''}</span><span><b>End:</b> ${esc(i.end)}</span>${plan.target!==''?`<span><b>Target:</b> ${esc(plan.target)} min</span>`:''}</div>
+${plan.focus?'<div class="reportNote"><b>Focus:</b> '+esc(plan.focus)+'</div>':''}
+${plan.personnel?'<div class="reportNote"><b>Personnel:</b> '+esc(plan.personnel)+'</div>':''}
+${i.missing?'<div class="reportNote warning">Incomplete timing: enter minutes for all activities.</div>':''}
+<table><colgroup><col style="width:18%"><col style="width:7%"><col style="width:22%"><col style="width:33%"><col style="width:10%"><col style="width:10%"></colgroup><thead><tr><th>Time</th><th>Min</th><th>Activity</th><th>Details / coaching points</th><th>Coach</th><th>Court</th></tr></thead>
+<tbody>${plan.drills.map((d,j)=>`<tr><td>${esc(i.times[j])}</td><td>${d.min===''?'—':esc(d.min)}</td><td><b>${esc(d.name||'Unnamed activity')}</b></td><td>${esc(d.detail)}</td><td>${esc(d.coach)}</td><td>${esc(d.court)}</td></tr>`).join('')}</tbody></table>
+${plan.plays?'<div class="reportSection"><b>SET PLAYS</b><div class="reportNote">'+esc(plan.plays)+'</div></div>':''}
+${plan.review?'<div class="reportSection"><b>COACH NOTES / REVIEW</b><div class="reportNote">'+esc(plan.review)+'</div></div>':''}
+<div class="reportFoot">Compete. Every play. Every day.<br>Play Hard, Play Smart, Play Together</div>`;
+}
+function mode(preview){
+$('editor').classList.toggle('hidden',preview);$('preview').classList.toggle('hidden',!preview);
+$('editBtn').classList.toggle('primary',!preview);$('previewBtn').classList.toggle('primary',preview);
+if(preview)renderReport();
+}
+function encode(){return JSON.stringify({app:'BrentwoodPracticePlanner',version:1,plan},null,2)}
+function validate(p){
+if(!p||typeof p!=='object'||!Array.isArray(p.drills)||p.drills.length>150)throw Error('This does not look like a practice plan.');
+const text=(v,max)=>typeof v==='string'?v.slice(0,max):'';
+const number=(v,max)=>v===''||v===null||v===undefined?'':Number.isFinite(Number(v))&&Number(v)>=0&&Number(v)<=max?Math.round(Number(v)):'';
+const date=text(p.date,10),start=text(p.start,5);
+return {id:text(p.id,100)||uid(),title:text(p.title,120)||'Varsity practice',date:/^\d{4}-\d{2}-\d{2}$/.test(date)?date:'',start:/^([01]\d|2[0-3]):[0-5]\d$/.test(start)?start:'',target:number(p.target,480),focus:text(p.focus,500),personnel:text(p.personnel,500),plays:text(p.plays,3000),review:text(p.review,3000),drills:p.drills.map(d=>{
+if(!d||typeof d!=='object')throw Error('A practice activity is invalid.');
+return {id:uid(),name:text(d.name,200),min:number(d.min,180),detail:text(d.detail,3000),coach:text(d.coach,200),court:text(d.court,200)}
+})};
+}
+function importText(raw){
+const data=JSON.parse(raw);
+if(data.app!=='BrentwoodPracticePlanner'||data.version!==1)throw Error('Use a plan exported from this planner.');
+plan=validate(data.plan);persist();render();mode(false);
+notify('Practice opened. Review the plan, then choose Print preview.');
+}
+document.querySelectorAll('[data-meta]').forEach(el=>el.addEventListener('input',()=>{
+let val=el.value;
+if(el.dataset.meta==='target'){
+if(val!==''&&(!Number.isFinite(+val)||+val<1||+val>480)){el.setCustomValidity('Use 1–480 minutes.');el.reportValidity();return}
+el.setCustomValidity('');val=val===''?'':Math.round(+val);
+}
+plan[el.dataset.meta]=val;summary();changed();
+}));
+$('drills').addEventListener('input',e=>{
+const field=e.target.dataset.field;if(!field)return;
+const d=plan.drills.find(d=>d.id===e.target.closest('[data-id]').dataset.id);if(!d)return;
+let v=e.target.value;
+if(field==='min'){
+if(v!==''&&(!Number.isFinite(+v)||+v<0||+v>180||!Number.isInteger(+v))){e.target.setCustomValidity('Use whole minutes from 0 to 180.');e.target.reportValidity();return}
+e.target.setCustomValidity('');v=v===''?'':+v;
+}
+d[field]=v;summary();changed();
+});
+$('drills').addEventListener('click',e=>{
+const b=e.target.closest('[data-action]');if(!b)return;
+const j=plan.drills.findIndex(d=>d.id===b.closest('[data-id]').dataset.id);
+if(b.dataset.action==='remove')plan.drills.splice(j,1);
+if(b.dataset.action==='up'&&j>0)[plan.drills[j-1],plan.drills[j]]=[plan.drills[j],plan.drills[j-1]];
+if(b.dataset.action==='down'&&j<plan.drills.length-1)[plan.drills[j+1],plan.drills[j]]=[plan.drills[j],plan.drills[j+1]];
+renderDrills();changed();
+});
+$('library').innerHTML=library.map((a,j)=>`<button data-library="${j}">+ ${esc(a[0])}<small>${a[1]===null?'Set minutes':a[1]+' min'}</small></button>`).join('');
+$('library').onclick=e=>{const b=e.target.closest('[data-library]');if(!b)return;plan.drills.push(activity(library[Number(b.dataset.library)]));renderDrills();changed();notify('Activity added to the timeline.')};
+$('addBtn').onclick=()=>{plan.drills.push(activity(['',null,'']));renderDrills();changed();const inputs=$('drills').querySelectorAll('[data-field="name"]');inputs[inputs.length-1].focus()};
+$('editBtn').onclick=$('backBtn').onclick=()=>mode(false);
+$('previewBtn').onclick=()=>mode(true);
+$('printBtn').onclick=()=>{renderReport();try{window.print()}catch(e){notify('Use your browser’s Print command with the print preview open.')}};
+$('saveBtn').onclick=()=>{
+const j=saved.findIndex(p=>p.id===plan.id),copy=JSON.parse(JSON.stringify(plan));
+if(j<0)saved.unshift(copy);else saved[j]=copy;
+renderSaved();if(persist())notify('Practice saved on this device. Export it to use it on another device.');
+};
+$('savedList').onchange=e=>{
+if(!e.target.value)return;
+const p=saved.find(p=>p.id===e.target.value);if(!p)return;
+plan=validate(p);render();persist();mode(false);notify('Saved practice opened.');
+};
+$('newBtn').onclick=()=>{persist();plan=fresh();render();mode(false);persist();notify('New practice started. Export or use Save to keep named practices.')};
+$('sampleBtn').onclick=()=>{
+if(plan.drills.length&&!confirm('Replace the current draft with last year’s example? Export or save first if you want to keep it.'))return;
+plan=fresh();plan.title='Varsity practice — last year’s example';plan.date='2025-11-21';plan.start='';plan.target='';
+const source=library.slice(0,12).concat([['[Activity not listed]',5,'5-minute block in original plan']],library.slice(12,17),[['Full Court',null,''],['Suicide',null,'']]);
+plan.drills=source.map(activity);plan.plays='Ice, Rip, Wheel, Circle, Bulldog, High post Slice, slice 2, devil, stack reverse';
+render();changed();notify('Original example loaded: 121 assigned minutes and four untimed activities.');
+};
+$('exportBtn').onclick=()=>{
+const blob=new Blob([encode()],{type:'application/json'}),url=URL.createObjectURL(blob);
+const a=document.createElement('a');a.href=url;a.download=`Brentwood-Practice-${plan.date||'undated'}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
+notify('Plan export requested. Send the file to your computer, then use Open plan there. If downloads are blocked, use Copy / paste transfer.');
+};
+$('importBtn').onclick=()=>$('fileInput').click();
+$('fileInput').onchange=async e=>{
+const file=e.target.files[0];if(!file)return;
+try{if(file.size>2000000)throw Error('Choose a practice file under 2 MB.');importText(await file.text())}
+catch(err){notify('Could not open plan: '+err.message)}
+e.target.value='';
+};
+$('transferBtn').onclick=()=>{$('transferText').value=encode();$('transferStatus').textContent='';$('transferDialog').showModal()};
+$('closeDialog').onclick=()=>$('transferDialog').close();
+$('copyBtn').onclick=async()=>{
+try{await navigator.clipboard.writeText($('transferText').value);$('transferStatus').textContent='Copied. Paste this text into the planner on your other device.'}
+catch(e){$('transferText').focus();$('transferText').select();$('transferStatus').textContent='Select and copy the highlighted text using your device’s Copy command.'}
+};
+$('pasteBtn').onclick=()=>{try{importText($('transferText').value);$('transferDialog').close()}catch(err){$('transferStatus').textContent=err.message}};
+window.addEventListener('beforeprint',renderReport);
+render();
+if(!storageOK)notify('Browser storage is unavailable. Use Export plan to keep and transfer your work.');
+else notify('Ready. Build a new practice or load last year’s example.');
+})();
+</script>
+</body>
+</html>
