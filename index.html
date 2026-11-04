@@ -108,6 +108,42 @@ td{padding:6px 4px}
 .reportMeta,.reportNote{font-size:9pt}
 .reportFoot{font-size:9pt}
 }
+  /* Keep the mobile timeline within the screen */
+@media (max-width: 760px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .layout > *,
+  .panel,
+  .drill,
+  .drillgrid > *,
+  .assignments > *,
+  .grid > * {
+    min-width: 0;
+  }
+
+  input,
+  textarea,
+  select {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .libraryButtons {
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .drillgrid {
+    grid-template-columns: minmax(0, 1fr) 70px;
+  }
+
+  .assignments {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
 </style>
 </head>
 <body>
